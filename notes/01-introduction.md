@@ -3,7 +3,12 @@
 > Next lesson: [Data Ingestion]()
 
 ### Table of Contents
-- [Introduction to Data Engineering]()
+- [Introduction to Data Engineering](#introduction-to-data-engineering)
+  - [Architecture](#architecture)
+  - [Data Pipelines](#data-pipelines)
+- [Docker](#docker)
+  - [Docker Image](#docker-image)
+  - [Creating a dockerfile and custom pipeline with the Docker](#creating-a-docker-file-and-custome-pipeline-with-the-docker)
 
 
 
