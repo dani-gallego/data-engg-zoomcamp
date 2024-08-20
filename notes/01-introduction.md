@@ -28,7 +28,7 @@ The pipeline typically involves steps like data extraction (from databases, APIs
 
 Data pipelines can handle batch processing, where data is processed in chunks at scheduled times, or stream processing, where data is processed in real-time as it arrives.
 
-![Data Pipelines](notes/images/data-pipelines.PNG)
+![Data Pipelines](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/data-pipelines.PNG)
 
 
 # Docker
