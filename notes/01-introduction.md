@@ -1,6 +1,4 @@
-> [Back to index](README.md)
-
-> Next lesson: [Data Ingestion]()
+# Week 1: Introduction
 
 ### Table of Contents
 - [Introduction to Data Engineering](#introduction-to-data-engineering)
@@ -8,7 +6,7 @@
   - [Data Pipelines](#data-pipelines)
 - [Docker and Postgres](#docker-and-postgres)
   - [Docker Image](#docker-image)
-  - [Creating a Dockerfile and custom pipeline with the Docker](#creating-a-docker-file-and-custome-pipeline-with-the-docker)
+  - [Creating a Dockerfile and custom pipeline with the Docker](#creating-a-docker-file-and-custom-pipeline-with-the-docker)
   - [Running Postgres in Docker](#running-postgres-in-docker)
     - [What is Airflow?](#what-is-airflow)
     - [For Windows](#for-windows)
@@ -273,15 +271,15 @@ After successfully logged in to the `localhost:8080`, let's now create a server.
 
 Right click on *Servers* on the left sidebar, select *Register* and then **Server...**.
 
-![](images\creating-pgadmin-server.PNG)
+![Creating pgAdmin Server](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/creating-pgadmin-server.PNG)
 
 It will show server configuration. Under *General* section, promptly input a server name. For an example, `Docker Localhost`.
 
-![](images\pgadmin-server-configuration-01.PNG)
+![General section - server configuration](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/pgadmin-server-configuration-01.PNG)
 
 Furthermore, under *Connection* section add the same host name that is indicated when the container was created. Since we have used the name as `pg-database`, we will use that. As for the username and password would be ***root*** as an example.
 
-![](images\pgadmin-server-configuration-02.PNG)
+![Connection section - server configuration](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/pgadmin-server-configuration-02.PNG)
 
 Click the *Save* button. We are now connected to the database.
 
