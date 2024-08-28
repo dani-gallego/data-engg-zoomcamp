@@ -19,6 +19,9 @@
   - [Using Ingestion Script with Docker](#using-ingestion-script-with-docker)
   - [Dockering Ingestion Script](#dockerizing-ingestion-script)
   - [Running Postgres and pgAdmin with Docker Compose](#running-postgres-and-pgadmin-with-docker-compose)
+  - [SQL Refresher](#sql-refresher)
+    - [SQL Command Types](#sql-command-types)
+    - [SQL Queries](#sql-queries)
 
 
 
@@ -459,4 +462,345 @@ And if you want to run the container again, we can use the [detached mode](https
 docker-compose up -d
 ```
 
+## SQL Refresher
+> Video Source: [SQL Refresher](https://www.youtube.com/watch?v=QEcps_iskgg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=11)
 
+We will have to work on 2 tables; `yellow_data_trips` and `zones` in this section. Before we proceed to the SQL query examples. We have to establish a new table called `zones` and added to the Postgres and pgAdmin container.
+
+Please check the [upload-data.ipnyb](01-introduction/docker_sql/upload-data.ipynb) to continue to work on table `zones`.
+
+I've created a new dockerfile named `Dockerfile-2` and `ingest_data_2.py` in order to connect the `taxi_zone_lookup.csv` to the same network as Postgres and pgAdmin container. 
+
+```dockerfile
+FROM python:3.12
+
+# We need to install wget to download the csv file
+RUN apt-get install wget
+# psycopg2 is a postgres db adapter for python: sqlalchemy needs it
+RUN pip install pandas sqlalchemy psycopg2
+# [Optional] Installing requests library due to modified script in ingest_data.py
+RUN pip install requests
+
+WORKDIR /app
+COPY ingest_data_2.py ingest_data_2.py 
+
+ENTRYPOINT [ "python", "ingest_data_2.py" ]
+```
+
+We need to build a new version of taxi_ingest container.
+```bash
+docker build -t taxi_ingest:v002 -f Dockerfile-2 .
+```
+
+Before doing this there must be no container running, use `docker ps` to check. Then we can run the new container using the following command.
+
+```bash
+URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+URL2=https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:v002 \
+    --user=root \
+    --password=root \
+    --host=pg-database \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name_1=yellow_taxi_trips \
+    --table_name_2=zones \
+    --url1=${URL1} \
+    --url2=${URL2}
+```
+
+We will be using the same `docker-compose.yaml`. Hence, we can use this [instruction](#running-postgres-and-pgadmin-with-docker-compose) like we did before.
+
+Before proceeding with SQL queries, we will briefly tackle the SQL Command Types. However you can skip this if you have knowledge about SQL Command Types by clicking [this](#basic-retrieval-of-taxi-trips). 
+
+### SQL Command Types
+#### Data Definition Language (DDL)
+DDL commands are used to define and manage database structure. They affect the database schema.
+
+  - CREATE: Creates a new table, database, index, or other database objects.
+   - Example: CREATE TABLE students (id INT, name VARCHAR(100));
+  - ALTER: Modifies an existing database object like a table.
+    - Example: ALTER TABLE students ADD COLUMN age INT;
+  - DROP: Deletes an existing database object like a table or database.
+    - Example: DROP TABLE students;
+  - TRUNCATE: Removes all records from a table, but the table - structure remains.
+    - Example: TRUNCATE TABLE students;
+
+#### Data Manipulation Language (DML)
+DML commands are used for managing data within database tables.
+
+  - SELECT: Retrieves data from the database.
+    - Example: SELECT * FROM students;
+  - INSERT: Adds new data into a table.
+    - Example: INSERT INTO students (id, name, age) VALUES (1, 'John Doe', 20);
+  - UPDATE: Modifies existing data within a table.
+    - Example: UPDATE students SET age = 21 WHERE id = 1;
+  - DELETE: Removes data from a table.
+    - Example: DELETE FROM students WHERE id = 1;
+
+#### Data Control Language (DCL)
+DCL commands manage permissions and access to the database.
+
+  - GRANT: Provides specific user permissions.
+    - Example: GRANT SELECT ON students TO user_name;
+  - REVOKE: Removes specific user permissions.
+    - Example: REVOKE SELECT ON students FROM user_name;
+
+#### Transaction Control Language (TCL)
+TCL commands manage transactions within the database, ensuring data integrity.
+
+  - COMMIT: Saves all changes made in the current transaction
+    - Example: COMMIT;
+  - ROLLBACK: Reverts changes made in the current transaction.
+    - Example: ROLLBACK;
+  - SAVEPOINT: Sets a savepoint within a transaction to which you can rollback.
+    - Example: SAVEPOINT savepoint_name;
+  - RELEASE SAVEPOINT: Removes a savepoint, making it no longer available for rollback.
+    - Example: RELEASE SAVEPOINT savepoint_name;
+  - SET TRANSACTION: Defines the transaction properties such as isolation level.
+    - Example: SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+#### Data Query Language (DQL)
+DQL primarily consists of the SELECT command, used to query data from the database.
+
+  - SELECT: Used to query data from a table or view.
+    - Example: SELECT name, age FROM students WHERE age > 20;
+
+### SQL Queries
+These SQL queries below is to execute retrieval and analyze data from the `taxi_yellow_trips` table and `zone` table.
+
+#### Basic Retrieval of Taxi Trips
+```SQL
+SELECT 
+  *
+FROM
+  yellow_taxi_trips
+LIMIT 100;
+```
+- This query retrieves the first 100 rows of all columns from the yellow_taxi_trips table.
+
+#### Joining Trips with Pickup and Dropoff Zones
+```SQL
+SELECT
+  *
+FROM
+  yellow_taxi_trips t,
+  zones zpu,
+  zones zdo
+WHERE
+  t."PULocationID" = zpu."LocationID" AND
+  t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+- This query retrieves all columns from the yellow_taxi_trips table and joins it with the zones table twice: once for the pickup location (zpu) and once for the dropoff location (zdo). The first 100 matching rows are returned.
+- We gave aliases (temporary name) to the `yellow_taxi_trips` and `zones` to make it easier to reference.
+- In Postgres, we have to use the double qoutes (`""`) if the column names composed of capital letter.
+
+#### [Implicit Joins] Retrieving Specific Columns with Concatenated Zone Information
+```SQL
+SELECT 
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	CONCAT(zpu."Borough", ' / ', zpu."Zone") AS pickup_loc,
+	CONCAT(zdo."Borough", ' / ', zdo."Zone") AS dropoff_loc
+FROM 
+	yellow_taxi_trips t,
+	zones zpu,
+	zones zdo
+WHERE
+	t."PULocationID" = zpu."LocationID" AND
+	t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+- This query selects specific columns, including pickup and dropoff times, the total fare amount, and concatenated location details for both pickup and dropoff zones. The first 100 matching rows are returned.
+- We used the `CONCAT` function to combine the borough and zone names into a single string.
+  - We used the `AS` keyword to give an alias to the concatenated string.
+- We specifically used `implicit joins` which is the old-style of join syntax. This approach involves listing multiple tables in the `FROM` clause and using `WHERE` clause to specify the join conditions.
+  - Advantages: 
+    1. Simple for very basic queries
+  - Disadvantages: 
+    1. Less readable and more error-prone for complex queries.
+    2. No explicit indication of join types which can lead to confusion.
+
+#### [Explicit Joins] Refined Query Using JOIN Syntax
+```SQL
+SELECT 
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	CONCAT(zpu."Borough", ' / ', zpu."Zone") AS pickup_loc,
+	CONCAT(zdo."Borough", ' / ', zdo."Zone") AS dropoff_loc
+FROM 
+	yellow_taxi_trips t 
+	JOIN zones zpu 
+		ON t."PULocationID" = zpu."LocationID" 
+	JOIN zones zdo 
+		ON t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+- Similar to the previous query, this one uses explicit JOIN syntax to combine the yellow_taxi_trips table with the zones table for both pickup and dropoff locations, returning the first 100 rows. This syntax is more modern and clear in expressing the relationships between table.
+- We have different type of JOINS, but in this one, we used INNER JOIN to return records with matching values in both values.
+- Besides implicit joins, we have used explicit joins for the SQL statement above. Explicit Joins approach is more modern and preferred for it's clarity and readability.
+  - Advantages:
+    1. Clear and explicit definition of the join type.
+    2. Improved readability and maintainability of queries
+    3. Better suited for complex queries and multiple joins
+  - Disadvantages:
+    1. Slightly more verbose than implicit joins.
+
+For further understanding about JOIN, learn more from [here](https://www.atlassian.com/data/sql/sql-join-types-explained-visually).
+
+These SQL queries below used to analyzed and manipulate data in the `yellow_taxi_trips` and `zones` table.
+
+#### Find Records with Null Pickup Location
+```SQL
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    "PULocationID",
+    "DOLocationID"
+FROM
+    yellow_taxi_trips t
+WHERE
+    "PULocationID" is NULL
+LIMIT 100;
+```
+
+#### Find Records with Null Dropoff Location
+```SQL
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    "PULocationID",
+    "DOLocationID"
+FROM
+    yellow_taxi_trips t
+WHERE
+    "DOLocationID" NOT IN (
+        SELECT "LocationID" FROM zones
+    )
+LIMIT 100;
+```
+- This queries retrieves the first 100 records where the PULocationID (Pickup Location ID) is NULL as wells as the DOLocationID.
+- It must be return to an empty list if you have not modified the original tables.
+
+
+#### Delete Specific Zone
+```SQL
+DELETE FROM zones WHERE "LocationID" = 142;
+```
+- This query deletes all the rows in the `zones` table with `LocationID` = 142.
+- Be careful when running this query as it will permanently delete the data.
+- In order to test the NULL syntax that we have used previously, the result must return list of rows with `PULocationID` of 142.
+
+#### JOIN `yellow_data_trips` with `zones` for Pickup and Dropoff Location
+```SQL
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    CONCAT(zpu."Borough", '/', zpu."Zone") AS "pickup_loc",
+    CONCAT(zdo."Borough", '/', zdo."Zone") AS "dropoff_loc"
+FROM
+    yellow_taxi_trips t LEFT JOIN zones zpu
+        ON t."PULocationID" = zpu."LocationID"
+    LEFT JOIN zones zdo
+        ON t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+- This query retrieves `yellow_taxi_trips` data, along with the concatenated borough and `zone` names for both pickup and dropoff locations, using left joins with the zones table. The first 100 rows are returned.
+- Performs a LEFT JOIN between the `yellow_taxi_trips` table (t) and the `zones` table (zpu), where t."PULocationID" matches zpu."LocationID". Performs another LEFT JOIN, this time between the `yellow_taxi_trips` table (t) and the `zones` table (zdo), where t."DOLocationID" matches zdo."LocationID".
+  - Left Table: The table listed before the LEFT JOIN keyword, in this case, `yellow_taxi_trips`.
+  - Right Table: The table listed after the LEFT JOIN keyword, in this case, `zones`.
+- If a row in the `yellow_taxi_trips table` has no corresponding match in the `zones` table for either the pickup or dropoff location, the query will still include that row from `yellow_taxi_trips`, but with NULL values for the concatenated location fields (pickup_loc and dropoff_loc).
+
+#### Query to Truncate Date to Day
+```SQL
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    DATE_TRUNC('DAY', tpep_pickup_datetime),
+    total_amount
+FROM
+    yellow_taxi_trips t
+LIMIT 100;
+```
+- This query selects the pickup and dropoff datetime, truncates the pickup datetime to the start of the day, and includes the total amount.
+  - `DATE_TRUNC('DAY', tpep_pickup_datetime)`: Truncates the tpep_pickup_datetime to the day level, effectively removing the time part.
+  - `LIMIT 100`: Limits the results to the first 100 rows.
+
+#### Query to Cast Date to Day
+```SQL
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    CAST(tpep_pickup_datetime AS DATE) as "day",
+    total_amount
+FROM
+    yellow_taxi_trips t
+LIMIT 100;
+```
+- This query selects the pickup and dropoff datetime, casts the pickup datetime to just the date (removing the time part), and includes the total amount.
+  - `CAST(tpep_pickup_datetime AS DATE) as "day"`: Converts tpep_pickup_datetime to a date-only format and labels it as "day".
+
+#### Query to Aggregate by Day
+```SQL
+SELECT
+    CAST(tpep_pickup_datetime AS DATE) as "day",
+    COUNT(1) as "count",
+    MAX(total_amount),
+    MAX(passenger_count)
+FROM
+    yellow_taxi_trips t
+GROUP BY
+    CAST(tpep_pickup_datetime AS DATE)
+ORDER BY "count" DESC;
+```
+- This query groups the data by day, counts the number of `yellow_taxi_trips` for each day, and retrieves the maximum total amount and maximum passenger count for each day.
+  - `COUNT(1) as "count"`: Counts the number of records for each day.
+  - `MAX(total_amount)`: Finds the maximum total amount for each day.
+  - `MAX(passenger_count)`: Finds the maximum passenger count for each day.
+  - `GROUP BY CAST(tpep_pickup_datetime AS DATE)`: Groups the results by the date.
+  - `ORDER BY "count" DESC`: Orders the results by the count of `yellow_taxi_trips` in descending order.
+
+#### Query to Aggregate by Day and Dropoff Location ID
+```SQL
+SELECT
+    CAST(tpep_pickup_datetime AS DATE) as "day",
+    "DOLocationID",
+    COUNT(1) as "count",
+    MAX(total_amount),
+    MAX(passenger_count)
+FROM
+    yellow_taxi_trips t
+GROUP BY
+    1, 2
+ORDER BY "count" DESC;
+```
+- This query groups the data by day and dropoff location ID, counts the number of `yellow_taxi_trips` for each combination, and retrieves the maximum total amount and passenger count for each combination.
+  - `GROUP BY 1, 2`: Groups by the first and second columns in the SELECT clause, which are the day and DOLocationID.
+
+#### Query to Aggregate by Day and Dropoff Location ID with Sorted Output
+```SQL
+SELECT
+    CAST(tpep_pickup_datetime AS DATE) as "day",
+    "DOLocationID",
+    COUNT(1) as "count",
+    MAX(total_amount),
+    MAX(passenger_count)
+FROM
+    yellow_taxi_trips t
+GROUP BY
+    1, 2
+ORDER BY
+    "day" ASC,
+    "DOLocationID" ASC;
+```
+- This query is similar to the previous one but sorts the results first by day in ascending order and then by dropoff location ID in ascending order.
+  - `ORDER BY "day" ASC, "DOLocationID" ASC`: Orders the results first by the day in ascending order, and then by DOLocationID in ascending order.
