@@ -1,0 +1,10 @@
+*.csv
+*.csv.gz
+*.json
+*.json.gz
+
+01-introduction/docker_sql/ny_taxi_postgres_data
+private/*
+01-introduction/docker_sql/pgadmin
+01-introduction/terraform/
+*.ipynb_checkpoints
