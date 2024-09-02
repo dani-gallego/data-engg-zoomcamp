@@ -1,5 +1,7 @@
 # Module 1 Homework
->[Link:](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/cohorts/2024/01-docker-terraform/homework.md)
+
+>Link: [Week 1: Homework](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/cohorts/2024/01-docker-terraform/homework.md)
+
 
 # Docker and SQL
 ## Question 1. Knowing docker tags
@@ -128,4 +130,110 @@ After updating the main.tf and variable.tf files run:
 
 ```
 terraform apply
+```
+
+
+Paste the output of this command into the homework submission form.
+
+```tf
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # google_bigquery_dataset.dataset will be created
+  + resource "google_bigquery_dataset" "dataset" {
+      + creation_time              = (known after apply)
+      + dataset_id                 = "trips_data_all"
+      + default_collation          = (known after apply)
+      + delete_contents_on_destroy = false
+      + effective_labels           = {
+          + "goog-terraform-provisioned" = "true"
+        }
+      + etag                       = (known after apply)
+      + id                         = (known after apply)
+      + is_case_insensitive        = (known after apply)
+      + last_modified_time         = (known after apply)
+      + location                   = "europe-west6"
+      + max_time_travel_hours      = (known after apply)
+      + project                    = "<omitted>"
+      + self_link                  = (known after apply)
+      + storage_billing_model      = (known after apply)
+      + terraform_labels           = {
+          + "goog-terraform-provisioned" = "true"
+        }
+
+      + access (known after apply)
+    }
+
+  # google_bigquery_table.table will be created
+  + resource "google_bigquery_table" "table" {
+      + creation_time       = (known after apply)
+      + dataset_id          = "trips_data_all"
+      + deletion_protection = false
+      + effective_labels    = {
+          + "goog-terraform-provisioned" = "true"
+        }
+      + etag                = (known after apply)
+      + expiration_time     = (known after apply)
+      + id                  = (known after apply)
+      + last_modified_time  = (known after apply)
+      + location            = (known after apply)
+      + num_bytes           = (known after apply)
+      + num_long_term_bytes = (known after apply)
+      + num_rows            = (known after apply)
+      + project             = "<omitted>"
+      + schema              = (known after apply)
+      + self_link           = (known after apply)
+      + table_id            = "ny_trips"
+      + terraform_labels    = {
+          + "goog-terraform-provisioned" = "true"
+        }
+      + type                = (known after apply)
+    }
+
+  # google_storage_bucket.data-lake-bucket will be created
+  + resource "google_storage_bucket" "data-lake-bucket" {
+      + effective_labels            = {
+          + "goog-terraform-provisioned" = "true"
+        }
+      + force_destroy               = true
+      + id                          = (known after apply)
+      + location                    = "EUROPE-WEST6"
+      + name                        = "dtc_data_lake_<omitted>"
+      + project                     = (known after apply)
+      + project_number              = (known after apply)
+      + public_access_prevention    = (known after apply)
+      + rpo                         = (known after apply)
+      + self_link                   = (known after apply)
+      + storage_class               = "STANDARD"
+      + terraform_labels            = {
+          + "goog-terraform-provisioned" = "true"
+        }
+      + uniform_bucket_level_access = true
+      + url                         = (known after apply)
+
+      + lifecycle_rule {
+          + action {
+              + type          = "Delete"
+                # (1 unchanged attribute hidden)
+            }
+          + condition {
+              + age                    = 30
+              + matches_prefix         = []
+              + matches_storage_class  = []
+              + matches_suffix         = []
+              + with_state             = (known after apply)
+                # (3 unchanged attributes hidden)
+            }
+        }
+
+      + soft_delete_policy (known after apply)
+
+      + versioning {
+          + enabled = true
+        }
+
+      + website (known after apply)
+    }
 ```
