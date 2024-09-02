@@ -8,9 +8,11 @@
 
 # Postgres Environment
 01-introduction/docker_sql/ny_taxi_postgres_data
+01-introduction/Homework/ny_taxi_postgres_data
 
 # pgAdmin Environment
 01-introduction/docker_sql/pgadmin
+01-introduction/Homework/pgadmin
 
 # Jupyter notebook checkpoints
 *.ipynb_checkpoints
