@@ -2,7 +2,6 @@
 
 >Link: [Week 1: Homework](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/cohorts/2024/01-docker-terraform/homework.md)
 
-
 # Docker and SQL
 ## Question 1. Knowing docker tags
 
