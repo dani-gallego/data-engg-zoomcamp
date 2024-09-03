@@ -22,11 +22,11 @@
   - [SQL Refresher](#sql-refresher)
     - [SQL Command Types](#sql-command-types)
     - [SQL Queries](#sql-queries)
-  - [Terraform and Google Cloud Platform ](#terraform-and-google-cloud-platform)
-    - [GCP Initial Setup](#gcp-initial-setup)
-    - [GCP Setup for Access](#gcp-setup-for-access)
-    - [Terraform Basic](#terraform-basics)
-    - [Creating GCP Infrastructure with Terraform](#creating-gcp-infrastructure-with-terraform)
+- [Terraform and Google Cloud Platform ](#terraform-and-google-cloud-platform)
+  - [GCP Initial Setup](#gcp-initial-setup)
+  - [GCP Setup for Access](#gcp-setup-for-access)
+  - [Terraform Basic](#terraform-basics)
+  - [Creating GCP Infrastructure with Terraform](#creating-gcp-infrastructure-with-terraform)
     
 
 
@@ -209,7 +209,7 @@ In this section, we will now create a Jupyter Notebook named as `upload-data.ipy
 
 We will use the data from what we have mentioned in [Architecture](#architecture). Specifically, we will use the [yellow_tripdata_2021-01](https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz). [Here](https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf) is the dictionary to understand each field.
 
-You may check the completed `upload-data.ipynb` by clicking this [link](docker_sql\upload-data.ipynb). This should be in the same directory with CSV file and the `ny_taxi_postgres_data` subdirectory.
+You may check the completed `upload-data.ipynb` by clicking this [link](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/01-introduction/docker_sql/upload-data.ipynb). This should be in the same directory with CSV file and the `ny_taxi_postgres_data` subdirectory.
 
 ## Connecting pgAdmin and Postgres
 > Video Source: [DE - Connecting pgAdmin and Postgres](https://www.youtube.com/watch?v=hCAIVe9N0ow&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=8)
@@ -325,7 +325,7 @@ The engine command should look like this:
 ```python
 engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
 ```
-You can check the complete script from [ingest-data.py](ingest_data.py).
+You can check the complete script from [ingest-data.py](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/01-introduction/docker_sql/ingest_data.py).
 
 > [!NOTE]
 >
@@ -476,9 +476,9 @@ docker-compose up -d
 
 We will have to work on 2 tables; `yellow_data_trips` and `zones` in this section. Before we proceed to the SQL query examples. We have to establish a new table called `zones` and added to the Postgres and pgAdmin container.
 
-Please check the [upload-data.ipnyb](01-introduction/docker_sql/upload-data.ipynb) to continue to work on table `zones`.
+Please check the [upload-data.ipnyb](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/01-introduction/docker_sql/upload-data.ipynb) to continue to work on table `zones`.
 
-I've created a new dockerfile named `Dockerfile-2` and `ingest_data_2.py` in order to connect the `taxi_zone_lookup.csv` to the same network as Postgres and pgAdmin container. 
+I've created a new dockerfile named [Dockerfile-2](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/01-introduction/docker_sql/Dockerfile-2) and [ingest_data_2.py](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/01-introduction/docker_sql/ingest_data_2.py) in order to connect the `taxi_zone_lookup.csv` to the same network as Postgres and pgAdmin container. 
 
 ```dockerfile
 FROM python:3.12

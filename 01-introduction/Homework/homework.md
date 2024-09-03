@@ -129,9 +129,14 @@ WHERE
 	CAST(lpep_dropoff_datetime AS DATE) = '2019-09-18';
 ```
 > Output:
-```
-15612
-```
+
+| total_taxi_trips  |
+|--------------|
+| 15612   |
+
+> Answer:
+
+**15612** is total taxi trips from September 18, 2019.
 
 ## Question 4. Longest trip for each day
 
@@ -167,7 +172,9 @@ LIMIT 1;
 |2019-09-26   |  341.64      |
 
 > Answer:
+
 The longest trip for each day was on **2019-09-26** with a distance of 341.64.
+
 
 ## Question 5. Three biggest pick up Boroughs
 
@@ -209,6 +216,7 @@ LIMIT 3;
 | Queens   |  78671.70|
 
 > Answer:
+
 The three pick up Boroughs that had a sum of total_amount superior to 50000 were **Brooklyn**, **Manhattan**, and **Queens**.
 
 
@@ -254,6 +262,7 @@ LIMIT 1;
 | JFK Airport  |  62.31  |
 
 > Answer:
+
 The largest tip was in the zone **JFK Airport**.
 
 ## Terraform
