@@ -59,7 +59,52 @@ You will also need the dataset with zones:
 
 Download this data and put it into Postgres (with jupyter notebooks or with a pipeline)
 
+```bash
+docker run -it \
+  -e POSTGRES_USER="root" \
+  -e POSTGRES_PASSWORD="root" \
+  -e POSTGRES_DB="ny_taxi_homework" \
+  -v //c/Users/.../Homework/ny_taxi_postgres_data:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  --network=pg-network \
+  --name pg-database-homework\
+  postgres:13
+```
 
+```bash
+docker run -it \
+  -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+  -e PGADMIN_DEFAULT_PASSWORD="root" \
+  -p 8080:80 \
+  --network=pg-network \
+  --name pgadmin-homework \
+  dpage/pgadmin4
+```
+
+```bash
+docker build -t taxi_ingest:homework .
+```
+
+```bash
+URL1="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-09.csv.gz"
+URL2="https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
+
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:homework \
+    --user=root \
+    --password=root \
+    --host=pg-database-homework \
+    --port=5432 \
+    --db=ny_taxi_homework \
+    --table_name_1=green_taxi_trips \
+    --table_name_2=zones \
+    --url1="${URL1}" \
+    --url2="${URL2}" 
+```
+```bash
+docker-compose up
+```
 ## Question 3. Count records 
 
 How many taxi trips were totally made on September 18th 2019?
@@ -73,6 +118,21 @@ Remember that `lpep_pickup_datetime` and `lpep_dropoff_datetime` columns are in 
 - 15859
 - 89009
 
+> Command:
+```SQL
+SELECT
+	COUNT(*) AS total_taxi_trips
+FROM
+	green_taxi_trips g
+WHERE
+	CAST(lpep_pickup_datetime AS DATE) = '2019-09-18' AND
+	CAST(lpep_dropoff_datetime AS DATE) = '2019-09-18';
+```
+> Output:
+```
+15612
+```
+
 ## Question 4. Longest trip for each day
 
 Which was the pick up day with the longest trip distance?
@@ -85,6 +145,29 @@ Tip: For every trip on a single day, we only care about the trip with the longes
 - 2019-09-26
 - 2019-09-21
 
+> Command:
+```SQL
+WITH daily_max_distance AS (
+  SELECT
+    CAST(lpep_pickup_datetime AS DATE) AS pickup_date,
+    MAX(trip_distance) AS max_distance
+  FROM green_taxi_trips g
+  GROUP BY pickup_date
+)
+
+SELECT pickup_date, max_distance
+FROM daily_max_distance
+ORDER BY max_distance DESC
+LIMIT 1;
+```
+> Output:
+
+|pickup_date  | max_distance |
+|--------------|-------------|
+|2019-09-26   |  341.64      |
+
+> Answer:
+The longest trip for each day was on **2019-09-26** with a distance of 341.64.
 
 ## Question 5. Three biggest pick up Boroughs
 
@@ -96,6 +179,37 @@ Which were the 3 pick up Boroughs that had a sum of total_amount superior to 500
 - "Bronx" "Brooklyn" "Manhattan"
 - "Bronx" "Manhattan" "Queens" 
 - "Brooklyn" "Queens" "Staten Island"
+
+> Command:
+```SQL
+SELECT 
+    zpd."Borough",
+    TRUNC(CAST(SUM(total_amount) AS NUMERIC), 2) AS total_sum
+FROM 
+    green_taxi_trips g JOIN zones zpd
+	ON g."PULocationID" = zpd."LocationID"
+WHERE 
+    DATE(lpep_pickup_datetime) = '2019-09-18'
+    AND zpd."Borough" != 'Unknown'
+GROUP BY 
+    zpd."Borough"
+HAVING 
+    SUM(total_amount) > 50000
+ORDER BY 
+    total_sum DESC
+LIMIT 3;
+```
+
+> Output:
+
+| Borough | total_sum|
+|----------|---------|
+| Brooklyn |  96333.23|
+| Manhattan |  92271.29|
+| Queens   |  78671.70|
+
+> Answer:
+The three pick up Boroughs that had a sum of total_amount superior to 50000 were **Brooklyn**, **Manhattan**, and **Queens**.
 
 
 ## Question 6. Largest tip
@@ -110,7 +224,37 @@ Note: it's not a typo, it's `tip` , not `trip`
 - JFK Airport
 - Long Island City/Queens Plaza
 
+> Command:
 
+```SQL
+SELECT 
+    zdo."Zone" AS dropoff_zone,
+    MAX(g.tip_amount) AS max_tip
+FROM 
+    green_taxi_trips g
+JOIN 
+    zones zpu ON g."PULocationID" = zpu."LocationID"
+JOIN 
+    zones zdo ON g."DOLocationID" = zdo."LocationID"
+WHERE 
+    zpu."Zone" = 'Astoria'
+    AND EXTRACT(MONTH FROM g.lpep_pickup_datetime) = 9
+    AND EXTRACT(YEAR FROM g.lpep_pickup_datetime) = 2019
+GROUP BY 
+    zdo."Zone"
+ORDER BY 
+    max_tip DESC
+LIMIT 1;
+```
+
+> Output:
+
+| dropoff_zone | max_tip |
+|--------------|---------|
+| JFK Airport  |  62.31  |
+
+> Answer:
+The largest tip was in the zone **JFK Airport**.
 
 ## Terraform
 
@@ -134,7 +278,7 @@ terraform apply
 
 Paste the output of this command into the homework submission form.
 
-```tf
+```
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
   + create
 
