@@ -124,9 +124,9 @@ After transformation, this block is essential to export or stores the processed 
 
 By putting this together, it is basically ETL (Extract, Transform, Load). This workflow closely mirrors a traditional ETL pipeline but with modular component that allows to build and manage the process more flexibly. 
 
-You can also navigate to the right side of the screen to see the Pipeline Tree. This Pipeline Tree in Mage is a visual representation of the steps in data pipeline. It shows the flow of data and the dependencies between different tasks.
+You can also navigate to the right side of the screen to see the Pipeline Tree. This `Pipeline Tree` in Mage is a visual representation of the steps in data pipeline. It shows the flow of data and the dependencies between different tasks. Here's the overview of `Pipeline Tree` with `Data loader` Block
 
-![Pipeline Tree]()
+![Pipeline Tree](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/mage%20-%20overview%20of%20example_pipeline.PNG)
 
 Going back to the `example_pipeline`, in this data pipeline, we will execute the blocks. Since the pipeline is composed of a Data Loader, Transformer, and Data Exporter blocks, instead of running them one by one, we will go to the last block, find the three dots (...), and click **Execute with all upstream blocks**. This way, all the blocks will be executed sequentially.
 
@@ -211,6 +211,8 @@ Step 4: Run the block with the SQL query below. This way it will initialized con
 ```SQL
 SELECT (1);
 ```
+
+![test_config](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/mage%20-%20test_config.PNG)
 
 [!NOTE]
 > You can delete the block by clicking the three dots (...), from there you will find **Delete block**
