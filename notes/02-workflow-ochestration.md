@@ -159,9 +159,11 @@ As I have mentioned, the `docker-compose.yaml` file contains environmental varia
 In the mage repo, under the folder named magic-zoomcamp we have `io_config.yaml`. You can access the file from VSCode or any tool that you've been using or using Mage. 
 
 If using Mage, go to the **Files**
+
 ![Mage - Files](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/mage%20-%20files.PNG)
 
 Then you can locate the io_config.yaml
+
 ![Mage - io_config.yaml](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/mage%20-%20io_config.PNG)
 
 This contains the default connection parameters under the `default:` profile. You can locate the Postgres service from there.
@@ -214,7 +216,7 @@ SELECT (1);
 
 ![test_config](https://github.com/dani-gallego/data-engg-zoomcamp/blob/main/notes/images/mage%20-%20test_config.PNG)
 
-[!NOTE]
+> [!NOTE]
 > You can delete the block by clicking the three dots (...), from there you will find **Delete block**
 
 ### From API to Postgres
